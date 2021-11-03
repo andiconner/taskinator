@@ -1,8 +1,12 @@
+var taskIdCounter = 0;
+
 var formEl = document.querySelector("#task-form");
  //variable reference to the task list . We target the <ul> element in the DOM
 var tasksToDoEl = document.querySelector("#tasks-to-do");
 
-var taskIdCounter = 0;
+
+
+var pageContentEl = document.querySelector("#page-content");
 
 // function 1
 var taskFormHandler = function(event) {
@@ -45,11 +49,9 @@ var createTaskEl = function(taskDataObj) {
     // add HTML content to div
     taskInfoEl.innerHTML = "<h3 class='task-name'>" + taskDataObj.name + "</h3><span class='task-type'>" + taskDataObj.type + "</span>";
     listItemEl.appendChild(taskInfoEl);
-
+    // create task actions (buttons and select) for task
     var taskActionsEl = createTaskActions(taskIdCounter);
     listItemEl.appendChild(taskActionsEl);
-
-    tasksToDoEl.appendChild(listItemEl);
 
     // add entire list item to list
     tasksToDoEl.appendChild(listItemEl);
@@ -62,12 +64,12 @@ var createTaskEl = function(taskDataObj) {
 var createTaskActions = function(taskId) {
     var actionContainerEl = document.createElement("div");
     actionContainerEl.className = "task-actions";
+    
     // create edit button
     var editButtonEl = document.createElement("button");
     editButtonEl.textContent = "Edit";
     editButtonEl.className = "btn edit-btn";
     editButtonEl.setAttribute("data-task-id", taskId);
-
     actionContainerEl.appendChild(editButtonEl)
 
     // create delete button
@@ -75,16 +77,16 @@ var createTaskActions = function(taskId) {
     deleteButtonEl.textContent = "Delete";
     deleteButtonEl.className = "btn delete-btn";
     deleteButtonEl.setAttribute("data-task-id", taskId);
-
     actionContainerEl.appendChild(deleteButtonEl);
 
+    //create change status dropdown
     var statusSelectEl = document.createElement("select");
     statusSelectEl.className = "select-status";
     statusSelectEl.setAttribute("name", "status-change");
     statusSelectEl.setAttribute("data-task-id", taskId);
-
     actionContainerEl.appendChild(statusSelectEl);
 
+    //create status options
     var statusChoices = ["To Do", "In Progress", "Completed"];
 
     for (var i = 0; i < statusChoices.length; i++) {
@@ -103,7 +105,58 @@ var createTaskActions = function(taskId) {
     
 };
 
+// Function 4
+var taskButtonHandler = function(event) {
+    // get target element from event
+    var targetEl=event.target;
 
-formEl.addEventListener("submit",  taskFormHandler);
+    // edit button was clicked
+  if (targetEl.matches(".edit-btn")) {
+    var taskId = targetEl.getAttribute("data-task-id");
+    editTask(taskId);
+  } 
+  // delete button was clicked
+  else if (targetEl.matches(".delete-btn")) {
+    var taskId = targetEl.getAttribute("data-task-id");
+    deleteTask(taskId);
+  }
+};
+
+// FUnction 5 - uses taskId as a parameter
+var deleteTask = function(taskId) {
+    console.log(taskId);
+    var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
+    taskSelected.remove();
+};
+
+// FUnction 6 - to edit and create its own taskSelected variables based on the provided taskId
+var editTask = function(taskId) {
+    console.log("editing task #" + taskId);
   
+    // get task list item element
+    var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
+
+    // get content from task name and type
+    var taskName = taskSelected.querySelector("h3.task-name").textContent;
+    
+
+    var taskType = taskSelected.querySelector("span.task-type").textContent;
+    
+    document.querySelector("input[name='task-name']").value = taskName;
+    document.querySelector("select[name='task-type']").value = taskType;
+    document.querySelector("#save-task").textContent = "Save Task";
+
+    formEl.setAttribute("data-task-id", taskId);
+};
+
+  
+
+// CALLs
+// create a new task
+formEl.addEventListener("submit",  taskFormHandler);
+
+// for edit and delete buttons
+pageContentEl.addEventListener("click", taskButtonHandler);
  
+// for changing the status
+pageContentEl.addEventListener("change", taskButtonHandler);
